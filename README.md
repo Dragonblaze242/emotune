@@ -6,6 +6,11 @@ Emotune is a *realtime facial expression based music player* which captures the 
 <img width="601" alt="emotune_2" src="https://github.com/spndnqq/emotune/assets/135336929/3cb849ec-cae1-4ca4-b433-364c3a3b9737">
 <img width="601" alt="emotune_1" src="https://github.com/spndnqq/emotune/assets/135336929/a3ab0c57-858b-4640-b8e3-7aa262f2569a">
 
+
+https://github.com/spndnqq/emotune/assets/135336929/19405d77-a74f-4b79-a07f-d3642b854e74
+
+
+
 ## Features
 -	This is complete GUI based application.
 -	Created using Python and Deepface, Kivy, OpenCV libraries.
