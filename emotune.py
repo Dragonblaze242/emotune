@@ -1,7 +1,7 @@
 from kivy.app import App
 from kivy.uix.image import Image
 from kivy.clock import Clock
-from kivy.uix.label import Label   
+from kivy.uix.label import Label
 from kivy.graphics.texture import Texture
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
@@ -13,7 +13,8 @@ import cv2
 import os
 import random
 
-no_of_songs = { "angry" : 4, "disgust" : 3, "fear" : 6, "happy" : 6, "neutral" : 8, "sad" : 6, "surprise" : 5}
+no_of_songs = {"angry": 4, "disgust": 3, "fear": 6, "happy": 6, "neutral": 8, "sad": 6, "surprise": 5}
+
 
 def draw_face_border(img, pt1, pt2, color, thickness, r, d):
     x1, y1 = pt1
@@ -41,7 +42,6 @@ def draw_face_border(img, pt1, pt2, color, thickness, r, d):
 
 
 class KivyCamera(Image):
-
     # Global to call on click events easily
     play = 0
     stop = 0
@@ -54,21 +54,20 @@ class KivyCamera(Image):
         self.capture = capture
         Clock.schedule_interval(self.update, 1.0 / fps)
         # Button
-        self.play = Button(text = "Play!", size_hint=(.1, .1))
-        self.stop = Button(text = "Stop", size_hint=(.1, .1))
+        self.play = Button(text="Play!", size_hint=(.1, .1))
+        self.stop = Button(text="Stop", size_hint=(.1, .1))
         layout.add_widget(self.play)
         layout.add_widget(self.stop)
-    
 
-    def update(self, bt = None):
+    def update(self, bt=None):
         ret, frame = self.capture.read()
         if ret:
             face_cascade = cv2.CascadeClassifier('models/haarcascade_frontalface_default.xml')
             faces = face_cascade.detectMultiScale(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY), 1.3, 4)
-            for (x,y,w,h) in faces:
+            for (x, y, w, h) in faces:
                 # To draw a rectangle in a face
-                draw_face_border(frame, (x, y), (x+w, y+h), (132, 0, 255), 2,15,10)
-            cv2.putText(frame, self.textout.capitalize(), (0,50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,145,255), 2)
+                draw_face_border(frame, (x, y), (x + w, y + h), (132, 0, 255), 2, 15, 10)
+            cv2.putText(frame, self.textout.capitalize(), (0, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 145, 255), 2)
             buf1 = cv2.flip(frame, 0)
             buf = buf1.tostring()
             image_texture = Texture.create(size=(frame.shape[1], frame.shape[0]), colorfmt='bgr')
@@ -76,22 +75,22 @@ class KivyCamera(Image):
             self.texture = image_texture
             self.play.fbind('on_press', self.triggerPlay, frame)
             self.stop.fbind('on_press', self.triggerStop)
-            
-    def triggerStop(self, bt = None):
+
+    def triggerStop(self, bt=None):
         if self.isPlaying:
-                self.sound.stop() 
+            self.sound.stop()
         return exit
 
-    def triggerPlay(self, frame, bt = None):
+    def triggerPlay(self, frame, bt=None):
         try:
-            obj = DeepFace.analyze(frame, actions = ['emotion'])
+            obj = DeepFace.analyze(frame, actions=['emotion'])
             emotion = obj["dominant_emotion"]
             self.textout = emotion
             if self.isPlaying:
-                self.sound.stop() 
+                self.sound.stop()
             path = 'https://raw.githubusercontent.com/8spx/emotune-music/master/' + emotion + '/'
-            with open('./song.mp3','wb') as output:
-               output.write(urlopen(path + str(random.randint(1, no_of_songs[emotion])) + '.mp3?raw=true').read())
+            with open('./song.mp3', 'wb') as output:
+                output.write(urlopen(path + str(random.randint(1, no_of_songs[emotion])) + '.mp3?raw=true').read())
             self.sound = SoundLoader.load('./song.mp3')
             if self.sound:
                 self.sound.play()
@@ -104,25 +103,24 @@ class KivyCamera(Image):
             self.textout = "Music File Does Not Exist..."
 
         return exit
-        
+
 
 class EmoTune(App):
     def build(self):
         # Icon
         self.icon = 'assets/logo.png'
-        # Layout 
+        # Layout
         floatLayout = FloatLayout()
         horizontalLayout = BoxLayout(orientation='horizontal')
         self.capture = cv2.VideoCapture(0)
-        self.my_camera = KivyCamera(capture=self.capture, fps=60, layout = horizontalLayout)
+        self.my_camera = KivyCamera(capture=self.capture, fps=60, layout=horizontalLayout)
         # Add Layouts
         floatLayout.add_widget(horizontalLayout)
         floatLayout.add_widget(self.my_camera)
         return floatLayout
 
-
     def on_stop(self):
-        #without this, app will not exit even if the window is closed
+        # without this, app will not exit even if the window is closed
         KivyCamera.triggerStop(self.my_camera)
         self.capture.release()
         if os.path.exists("./song.mp3"):
